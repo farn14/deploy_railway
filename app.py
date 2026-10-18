@@ -314,6 +314,13 @@ def call_ninearm_qwen(category: str, safe_topic: str, original_prompt: str) -> d
 - **Cinematography & Style Notes**: (คำอธิบายสไตล์ แสง เงา และคู่สี)
 ตอบเป็น Markdown สวยงาม กระชับ ไม่ต้องมีคำเกริ่นนำ"""
         user_content = f"{system_instruction}\n\n[แนวทางภาพปลอดภัย]: \"{safe_topic}\""
+    elif category in ("General / Safe", "ทั่วไป"):
+        system_instruction = """คุณคือ Principal Software Architect และ AI Engineer ผู้เชี่ยวชาญระดับสูง
+หน้าที่ของคุณคือรับโจทย์ทางวิศวกรรมซอฟต์แวร์ สถาปัตยกรรมระบบ API และการพัฒนาแอปพลิเคชัน
+วิเคราะห์เชิงลึก อธิบายข้อจำกัดของแพลตฟอร์ม ยกตัวอย่างแนวทางแก้ไขปัญหาทางวิศวกรรมที่ดีที่สุด (Best Practices)
+พร้อมโครงสร้างโค้ดที่สามารถนำไปรันใช้งานได้จริงตามมาตรฐานวิศวกรรมซอฟต์แวร์
+ตอบเป็นภาษาไทยที่เป็นมืออาชีพ สละสลวย ชัดเจน มีโครงสร้าง Markdown ครบถ้วน"""
+        user_content = f"{system_instruction}\n\n[โจทย์วิศวกรรมและคำถามที่ต้องการคำตอบ]: \"{safe_topic}\""
     else:
         system_instruction = """คุณคือ Senior Cybersecurity Architect และ Enterprise Defense Specialist
 หน้าที่ของคุณคือรับ 'หัวข้อวิจัยและวิศวกรรมความปลอดภัยเชิงรับ (Defensive Security & Threat Modeling)' 
@@ -343,7 +350,7 @@ def call_ninearm_qwen(category: str, safe_topic: str, original_prompt: str) -> d
     try:
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(NINEARM_GATEWAY_URL, data=data, headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=35) as resp:
+        with urllib.request.urlopen(req, timeout=90) as resp:
             res = json.loads(resp.read().decode("utf-8"))
             content_items = res.get("content", [])
             output_text = ""
@@ -378,6 +385,12 @@ def execute_prompt_with_ai(prompt: str, category: str = "") -> dict:
             "หน้าที่ของคุณคือวิเคราะห์โครงสร้าง Prompt ศิลปะที่ได้รับ พร้อมอธิบายรายละเอียดการจัดองค์ประกอบภาพ "
             "แสง Studio Lighting, สเปกกล้อง/เลนส์, Mood & Tone และแนะนำเทคนิคการ Render ภาพให้สวยสมจริงระดับ Masterpiece"
         )
+    elif category in ("General / Safe", "ทั่วไป"):
+        system_instruction = (
+            "คุณคือ Principal Software Architect และ AI Engineer ผู้เชี่ยวชาญระดับสูง "
+            "หน้าที่ของคุณคือให้คำแนะนำเชิงสถาปัตยกรรม เขียนโค้ดตัวอย่างที่สมบูรณ์ ปฏิบัติตาม Best Practices "
+            "และอธิบายการแก้ไขข้อจำกัดของแพลตฟอร์มอย่างละเอียด ชัดเจน ตรงประเด็น เป็นภาษาไทยระดับมืออาชีพ"
+        )
     else:
         system_instruction = (
             "คุณคือ Senior Cybersecurity Specialist และ Security Architect "
@@ -392,14 +405,14 @@ def execute_prompt_with_ai(prompt: str, category: str = "") -> dict:
         "max_tokens": 2048,
         "thinking": {"type": "enabled", "budget_tokens": 512},
         "messages": [
-            {"role": "user", "content": f"{system_instruction}\n\n[โจทย์/คำถามวิศวกรรมความปลอดภัย]:\n{prompt}"}
+            {"role": "user", "content": f"{system_instruction}\n\n[โจทย์/คำถามวิศวกรรม]:\n{prompt}"}
         ]
     }
 
     try:
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(NINEARM_GATEWAY_URL, data=data, headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=45) as resp:
+        with urllib.request.urlopen(req, timeout=90) as resp:
             res = json.loads(resp.read().decode("utf-8"))
             content_items = res.get("content", [])
             output_text = ""
@@ -880,8 +893,29 @@ HTML_PAGE = r"""<!DOCTYPE html>
 """
 
 class SafeHandler(http.server.SimpleHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.end_headers()
+
     def do_GET(self):
-        if self.path == "/" or self.path == "/index.html":
+        hub_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "secure_hub.html")
+        if self.path in ("/", "/index.html", "/secure_hub", "/secure_hub.html"):
+            if os.path.exists(hub_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                with open(hub_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(HTML_PAGE.encode("utf-8"))
+        elif self.path in ("/legacy", "/prompt_engine"):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -889,10 +923,11 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path in ("/health", "/api/health"):
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             health_data = {
                 "status": "healthy",
-                "service": "safe-gateway-engine",
+                "service": "secure-relay-data-hub",
                 "lexicon_count": len(OFFENSIVE_LEXICON),
                 "model": NINEARM_MODEL_ID,
                 "timestamp": datetime.now().isoformat()
@@ -901,13 +936,52 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == "/api/lexicon":
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(OFFENSIVE_LEXICON, ensure_ascii=False).encode('utf-8'))
         else:
             self.send_error(404)
 
     def do_POST(self):
-        if self.path == "/api/refactor":
+        if self.path == "/api/gateway":
+            content_len = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_len)
+            try:
+                payload = json.loads(post_data.decode('utf-8'))
+                target_url = payload.get('target_url', 'https://gateway.9arm.co/v1/chat/completions')
+                api_key = payload.get('api_key', '')
+                body_data = payload.get('body', {})
+
+                req_headers = {'Content-Type': 'application/json'}
+                if api_key:
+                    req_headers['Authorization'] = f'Bearer {api_key}'
+
+                json_bytes = json.dumps(body_data).encode('utf-8')
+                proxy_req = urllib.request.Request(target_url, data=json_bytes, headers=req_headers, method='POST')
+
+                with urllib.request.urlopen(proxy_req, timeout=120) as resp:
+                    resp_bytes = resp.read()
+                    self.send_response(resp.status)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(resp_bytes)
+            except urllib.error.HTTPError as e:
+                err_content = e.read()
+                self.send_response(e.code)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(err_content)
+            except Exception as e:
+                err_resp = json.dumps({'error': str(e)}).encode('utf-8')
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(err_resp)
+
+        elif self.path == "/api/refactor":
             content_len = int(self.headers.get('Content-Length', 0))
             post_body = self.rfile.read(content_len)
             req = json.loads(post_body.decode('utf-8'))
@@ -918,6 +992,7 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
 
@@ -934,6 +1009,7 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(ai_result, ensure_ascii=False).encode('utf-8'))
 
@@ -949,6 +1025,7 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(exec_result, ensure_ascii=False).encode('utf-8'))
 

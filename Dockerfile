@@ -8,12 +8,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Copy application code
-COPY app.py .
+# Copy application code and assets
+COPY . .
 
 # Healthcheck for Railway / Docker
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:' + str(os.environ.get('PORT', 8080)) + '/health', timeout=3)" || exit 1
+    CMD python -c "import urllib.request, os; urllib.request.urlopen('http://127.0.0.1:' + str(os.environ.get('PORT', 8080)) + '/health', timeout=3)" || exit 1
 
 EXPOSE 8080
 

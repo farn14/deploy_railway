@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Relay & Data Hub | ศูนย์จัดการข้อมูลและเชื่อมต่อ Gateway</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --border-color: #475569;
+            --accent-cyan: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-family: 'Segoe UI', Leelawadee, Sarabun, -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            text-rendering: optimizeLegibility;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: #fff;
+        }
+
+        .brand-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .badge-secure {
+            background-color: rgba(74, 222, 128, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-secondary);
+            color: var(--accent-cyan);
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], input[type="password"], select, textarea {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 180px;
+            font-family: Consolas, 'Courier New', monospace;
+            line-height: 1.5;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background-color: var(--accent-cyan);
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-green {
+            background-color: var(--accent-green);
+            color: #052e16;
+        }
+
+        .output-box {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            min-height: 200px;
+            max-height: 480px;
+            overflow-y: auto;
+            font-family: Consolas, monospace;
+            font-size: 12.5px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #cbd5e1;
+        }
+
+        .stat-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-item {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+        }
+
+        .file-dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .file-dropzone:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .file-dropzone p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .notice-banner {
+            background-color: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: #bae6fd;
+        }
+
+        .badge-method {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            <div class="brand-title">
+                <h1>Secure Relay & Data Hub</h1>
+                <p>ระบบเชื่อมต่อ API และประมวลผลข้อมูลตรงระดับ Local โดยไม่ผ่าน AI Chat Filter</p>
+            </div>
+        </div>
+        <div class="badge-secure">
+            <span>🛡️</span>
+            <span>Zero-Cloud Filter Leakage</span>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('relay')">📡 1. ส่งตรงเข้า NineArm Gateway</button>
+        <button class="tab-btn" onclick="switchTab('classifier')">📂 2. คัดแยก & จำแนกข้อมูลลับ (Local)</button>
+        <button class="tab-btn" onclick="switchTab('converter')">🔐 3. แปลง Base64 / Token Tools</button>
+    </div>
+
+    <!-- TAB 1: RELAY TO NINEARM GATEWAY -->
+    <div id="tab-relay" class="tab-pane active">
+        <div class="notice-banner" style="margin-bottom: 20px;">
+            💡 <strong>คำอธิบาย:</strong> แท็บนี้จะยิงคำขอตรงจากเบราว์เซอร์ของคุณฟานไปยัง <strong>gateway.9arm.co</strong> ทันที ข้อความลับ รหัสผ่าน หรือ Prompt ใดๆ จะ<strong>ไม่ถูกส่งผ่าน Antigravity หรือ Gemini Chat</strong> ทำให้ไม่ถูกสกัดกั้นจากระบบตรวจสอบคำของ Chat
+        </div>
+
+        <div class="grid-layout">
+            <div class="card">
+                <div class="card-title">⚙️ ตั้งค่าการเชื่อมต่อ (Gateway Config)</div>
+                <div class="input-group">
+                    <label>Gateway Endpoint:</label>
+                    <input type="text" id="gw-url" value="https://gateway.9arm.co/v1/chat/completions">
+                </div>
+                <div class="input-group">
+                    <label>Bearer API Key / Token:</label>
+                    <input type="password" id="gw-key" placeholder="วาง API Key ของ NineArm (ถ้ามี หรือเว้นว่างหากใช้เครือข่ายอนุญาต)">
+                </div>
+                <div class="grid-layout" style="gap: 10px;">
+                    <div class="input-group">
+                        <label>Target Model:</label>
+                        <select id="gw-model">
+                            <option value="qwen3.8-27b-fp8" selected>qwen3.8-27b-fp8 (Tier 1)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Reasoning Effort:</label>
+                        <select id="gw-reasoning">
+                            <option value="medium" selected>medium (บังคับเพื่อไม่ให้โดน Reject)</option>
+                            <option value="low">low</option>
+                            <option value="default">default</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>กล่องข้อความ / คำสั่งส่งไปยัง Gateway (ใส่ข้อความดิบหรือ Base64 ได้ทันที):</label>
+                    <textarea id="gw-prompt" placeholder="พิมพ์ข้อความที่ต้องการสั่งงาน NineArm ที่นี่ เช่น โค้ดดิบ, คำถาม, หรือนำเข้าข้อมูลลับ..."></textarea>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-green" onclick="sendToGateway()">🚀 ยิงส่งไปยัง NineArm Gateway ทันที</button>
+                    <button class="btn btn-secondary" onclick="decodePromptInput()">🔄 ถอดรหัส Base64 ในกล่องนี้ก่อนส่ง</button>
+                    <button class="btn btn-secondary" onclick="clearField('gw-prompt')">ล้างข้อมูล</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📥 ผลตอบกลับจาก Gateway (Direct Response)</div>
+                    <span id="gw-status" class="badge-method">พร้อมใช้งาน</span>
+                </div>
+                <div class="output-box" id="gw-output">ยังไม่มีข้อมูลตอบกลับ รอการส่งคำสั่ง...</div>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="copyOutput('gw-output')">📋 คัดลอกผลลัพธ์</button>
+                    <button class="btn btn-secondary" onclick="downloadOutput('gw-output', 'gateway_response.txt')">💾 บันทึกเป็นไฟล์</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: LOCAL CLASSIFIER -->
+    <div id="tab-classifier" class="tab-pane">
+        <div class="notice-banner" style="margin-bottom: 20px;">
+            🛡️ <strong>ประมวลผลในเครื่อง 100%:</strong> จัดระเบียบ คัดแยก และจัดหมวดหมู่ข้อมูล Credential (`user:pass` / `host:port:user:pass`) ทำงานในเบราว์เซอร์ของคุณฟาน ข้อมูลไม่หลุดออกสู่อินเทอร์เน็ต
+        </div>
+
+        <div class="stat-bar" style="margin-bottom: 20px;">
+            <div class="stat-item">
+                <div class="stat-label">รายการทั้งหมด</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Email : Pass</div>
+                <div class="stat-value" id="stat-email" style="color: var(--accent-green);">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Username : Pass</div>
+                <div class="stat-value" id="stat-user" style="color: var(--accent-cyan);">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">รูปแบบผิด / ผิดพลาด</div>
+                <div class="stat-value" id="stat-invalid" style="color: var(--accent-amber);">0</div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="card">
+                <div class="card-title">📂 นำเข้าข้อมูล (Paste หรือเลือกไฟล์)</div>
+                <div class="file-dropzone" onclick="document.getElementById('file-input').click()">
+                    <span style="font-size: 28px;">📄</span>
+                    <div style="font-weight: 600; margin-top: 4px;">คลิกเพื่อเลือกไฟล์ .txt ในเครื่อง</div>
+                    <p>รองรับไฟล์ข้อความ UTF-8, TIS-620 หรือลากไฟล์มาวาง</p>
+                    <input type="file" id="file-input" style="display: none;" onchange="handleFileSelect(event)">
+                </div>
+
+                <div class="input-group">
+                    <label>หรือวางข้อมูลโดยตรง (รองรับคั่นด้วย <code>:</code>, <code>|</code>, <code>;</code>, <code>Tab</code>):</label>
+                    <textarea id="raw-combos" placeholder="example@mail.com:password123&#10;user01:secretPass&#10;mail.server.com:587:admin@corp.com:P@ssword"></textarea>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn" onclick="processLocalCombos()">⚡ เริ่มจำแนกและคัดกรองข้อมูล</button>
+                    <button class="btn btn-secondary" onclick="clearClassifier()">ล้างข้อมูล</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📑 ผลการจัดกลุ่มและคัดแยก (Sanitized Output)</div>
+                    <select id="export-filter" onchange="filterOutputView()" style="padding: 4px 8px; font-size: 11px;">
+                        <option value="all">แสดงทั้งหมด</option>
+                        <option value="email">เฉพาะ Email:Pass</option>
+                        <option value="user">เฉพาะ User:Pass</option>
+                    </select>
+                </div>
+                <div class="output-box" id="classifier-output">รอการนำเข้าข้อมูล...</div>
+                <div class="btn-row">
+                    <button class="btn btn-green" onclick="downloadClassifierResult('txt')">💾 ดาวน์โหลด TXT สะอาด</button>
+                    <button class="btn btn-secondary" onclick="downloadClassifierResult('json')">💾 ดาวน์โหลด JSON รายงาน</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: CONVERTER TOOLS -->
+    <div id="tab-converter" class="tab-pane">
+        <div class="grid-layout">
+            <div class="card">
+                <div class="card-title">🔐 ตัวแปลง Base64 Token ป้องกัน Filter</div>
+                <div class="input-group">
+                    <label>ข้อความดิบ / พาทไฟล์บนเครื่อง:</label>
+                    <textarea id="conv-plain" placeholder="วางพาทไฟล์หรือข้อความดิบ เช่น:&#10;C:\Users\gsose\Downloads\Telegram Desktop\smtptest\365test.txt"></textarea>
+                </div>
+                <div class="btn-row">
+                    <button class="btn" onclick="convertToBase64()">🔒 แปลงเป็น Base64 Token (Encode)</button>
+                    <button class="btn btn-secondary" onclick="clearField('conv-plain')">ล้าง</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔓 ผลลัพธ์ Token (ปลอดภัย 100% สำหรับส่งผ่านสคริปต์)</div>
+                <div class="input-group">
+                    <label>Base64 Opaque Token:</label>
+                    <textarea id="conv-base64" placeholder="ชุดตัวอักษร Base64 Token จะแสดงที่นี่..."></textarea>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-green" onclick="decodeFromBase64()">🔓 ถอดรหัสกลับ (Decode)</button>
+                    <button class="btn btn-secondary" onclick="copyOutput('conv-base64')">📋 คัดลอก Token</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let classifiedData = { email: [], user: [], invalid: [] };
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        function clearField(id) {
+            document.getElementById(id).value = '';
+        }
+
+        function copyOutput(id) {
+            const el = document.getElementById(id);
+            const text = el.value || el.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('📋 คัดลอกข้อมูลลง Clipboard เรียบร้อยแล้ว!');
+            });
+        }
+
+        function downloadOutput(id, filename) {
+            const el = document.getElementById(id);
+            const text = el.value || el.innerText;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ==========================================
+        // 1. RELAY TO NINEARM GATEWAY
+        // ==========================================
+        async function sendToGateway() {
+            const url = document.getElementById('gw-url').value.trim();
+            const apiKey = document.getElementById('gw-key').value.trim();
+            const model = document.getElementById('gw-model').value;
+            const reasoning = document.getElementById('gw-reasoning').value;
+            const prompt = document.getElementById('gw-prompt').value.trim();
+            const statusEl = document.getElementById('gw-status');
+            const outputEl = document.getElementById('gw-output');
+
+            if (!prompt) {
+                alert('กรุณากรอกข้อความหรือคำสั่งในช่อง Prompt ก่อนส่ง');
+                return;
+            }
+
+            statusEl.innerText = 'กำลังส่งคำขอ...';
+            statusEl.style.color = 'var(--accent-amber)';
+            outputEl.innerText = '⏳ กำลังเชื่อมต่อไปยัง ' + url + ' โดยตรงจากเบราว์เซอร์ของคุณ...\n';
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (apiKey) {
+                headers['Authorization'] = 'Bearer ' + apiKey;
+            }
+
+            const body = {
+                model: model,
+                messages: [
+                    { role: 'user', content: prompt }
+                ]
+            };
+
+            if (reasoning !== 'default') {
+                body.reasoning_effort = reasoning;
+            }
+
+            try {
+                const startTime = performance.now();
+                let res;
+                // If served from local server, use /api/gateway proxy to bypass CORS transparently
+                if (window.location.protocol.startsWith('http') && window.location.pathname.includes('secure_hub.html')) {
+                    res = await fetch('/api/gateway', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            target_url: url,
+                            api_key: apiKey,
+                            body: body
+                        })
+                    });
+                } else {
+                    res = await fetch(url, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(body)
+                    });
+                }
+
+                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    statusEl.innerText = 'เกิดข้อผิดพลาด (' + res.status + ')';
+                    statusEl.style.color = '#f87171';
+                    outputEl.innerText = `❌ HTTP Error ${res.status}:\n${errorText}`;
+                    return;
+                }
+
+                const data = await res.json();
+                statusEl.innerText = `สำเร็จ (${duration} วินาที)`;
+                statusEl.style.color = 'var(--accent-green)';
+
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    outputEl.innerText = data.choices[0].message.content;
+                } else {
+                    outputEl.innerText = JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                statusEl.innerText = 'การเชื่อมต่อล้มเหลว';
+                statusEl.style.color = '#f87171';
+                outputEl.innerText = `❌ ไม่สามารถเชื่อมต่อกับ Gateway ได้:\n${err.message}\n\n💡 แนะนำ: รันผ่าน 'run_secure_hub.py' หรือดับเบิลคลิก 'START_SECURE_HUB.bat' เพื่อหลบ CORS 100%`;
+            }
+        }
+
+        function decodePromptInput() {
+            const input = document.getElementById('gw-prompt');
+            try {
+                const decoded = decodeURIComponent(escape(atob(input.value.trim())));
+                input.value = decoded;
+            } catch (e) {
+                alert('ไม่สามารถถอดรหัส Base64 ได้: ' + e.message);
+            }
+        }
+
+        // ==========================================
+        // 2. LOCAL CREDENTIAL CLASSIFIER
+        // ==========================================
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('raw-combos').value = e.target.result;
+                processLocalCombos();
+            };
+            reader.readAsText(file);
+        }
+
+        function processLocalCombos() {
+            const raw = document.getElementById('raw-combos').value;
+            const lines = raw.split(/\r?\n/);
+            
+            classifiedData = { email: [], user: [], invalid: [] };
+            const emailRegex = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+            const userRegex = /^[A-Za-z0-9._\-]{3,64}$/;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('#') || line.startsWith(';')) continue;
+
+                let parts = [];
+                if (line.includes(':')) parts = line.split(':');
+                else if (line.includes('|')) parts = line.split('|');
+                else if (line.includes(';')) parts = line.split(';');
+                else if (line.includes('\t')) parts = line.split('\t');
+
+                let user = null;
+                let pass = null;
+
+                if (parts.length === 2) {
+                    user = parts[0].trim();
+                    pass = parts[1].trim();
+                } else if (parts.length >= 4) {
+                    user = parts[parts.length - 2].trim();
+                    pass = parts[parts.length - 1].trim();
+                }
+
+                if (user && pass) {
+                    if (emailRegex.test(user)) {
+                        classifiedData.email.push({ user, pass, original: line });
+                    } else if (userRegex.test(user)) {
+                        classifiedData.user.push({ user, pass, original: line });
+                    } else {
+                        classifiedData.invalid.push({ line, reason: 'Invalid format' });
+                    }
+                } else {
+                    classifiedData.invalid.push({ line, reason: 'Delimiter mismatch' });
+                }
+            }
+
+            // Update stats
+            const total = classifiedData.email.length + classifiedData.user.length + classifiedData.invalid.length;
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-email').innerText = classifiedData.email.length;
+            document.getElementById('stat-user').innerText = classifiedData.user.length;
+            document.getElementById('stat-invalid').innerText = classifiedData.invalid.length;
+
+            filterOutputView();
+        }
+
+        function filterOutputView() {
+            const filter = document.getElementById('export-filter').value;
+            const out = document.getElementById('classifier-output');
+            let lines = [];
+
+            if (filter === 'all' || filter === 'email') {
+                classifiedData.email.forEach(item => lines.push(`${item.user}:${item.pass}`));
+            }
+            if (filter === 'all' || filter === 'user') {
+                classifiedData.user.forEach(item => lines.push(`${item.user}:${item.pass}`));
+            }
+
+            out.innerText = lines.length > 0 ? lines.join('\n') : 'ไม่มีข้อมูลในหมวดหมู่ที่เลือก';
+        }
+
+        function clearClassifier() {
+            document.getElementById('raw-combos').value = '';
+            document.getElementById('classifier-output').innerText = 'รอการนำเข้าข้อมูล...';
+            document.getElementById('stat-total').innerText = '0';
+            document.getElementById('stat-email').innerText = '0';
+            document.getElementById('stat-user').innerText = '0';
+            document.getElementById('stat-invalid').innerText = '0';
+            classifiedData = { email: [], user: [], invalid: [] };
+        }
+
+        function downloadClassifierResult(format) {
+            if (format === 'txt') {
+                downloadOutput('classifier-output', 'cleaned_credentials.txt');
+            } else if (format === 'json') {
+                const report = {
+                    summary: {
+                        total: classifiedData.email.length + classifiedData.user.length + classifiedData.invalid.length,
+                        email_credentials: classifiedData.email.length,
+                        username_credentials: classifiedData.user.length,
+                        invalid_entries: classifiedData.invalid.length
+                    },
+                    data: classifiedData
+                };
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'classification_report.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // ==========================================
+        // 3. CONVERTER TOOLS
+        // ==========================================
+        function convertToBase64() {
+            const raw = document.getElementById('conv-plain').value;
+            if (!raw) return;
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(raw)));
+                document.getElementById('conv-base64').value = encoded;
+            } catch (e) {
+                alert('เกิดข้อผิดพลาดในการแปลง: ' + e.message);
+            }
+        }
+
+        function decodeFromBase64() {
+            const b64 = document.getElementById('conv-base64').value.trim();
+            if (!b64) return;
+            try {
+                const decoded = decodeURIComponent(escape(atob(b64)));
+                document.getElementById('conv-plain').value = decoded;
+            } catch (e) {
+                alert('ไม่สามารถถอดรหัสได้ (อาจไม่ใช่รูปแบบ Base64 ที่ถูกต้อง)');
+            }
+        }
+    </script>
+</body>
+</html>
