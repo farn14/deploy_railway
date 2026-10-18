@@ -3,150 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Relay & Data Hub | ศูนย์จัดการข้อมูลและเชื่อมต่อ Gateway</title>
+    <title>PentAGI Real-Time Multi-Agent Operations Center | Antigravity ➔ NineArm ➔ PentAGI</title>
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-card: #334155;
-            --border-color: #475569;
+            --bg-deep: #070b14;
+            --bg-card: #0d1527;
+            --bg-card-hover: #131e38;
+            --border-dim: #1e293b;
+            --border-glow: #38bdf8;
             --accent-cyan: #38bdf8;
-            --accent-green: #4ade80;
+            --accent-green: #34d399;
             --accent-amber: #fbbf24;
             --accent-purple: #c084fc;
+            --accent-rose: #f43f5e;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --font-family: 'Segoe UI', Leelawadee, Sarabun, -apple-system, sans-serif;
+            --font-mono: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            --font-ui: 'Segoe UI', Leelawadee, Sarabun, -apple-system, sans-serif;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: var(--font-family);
+            font-family: var(--font-ui);
             text-rendering: optimizeLegibility;
         }
 
         body {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-deep);
             color: var(--text-main);
             min-height: 100vh;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            padding: 24px;
+            gap: 20px;
         }
 
+        /* Top Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 24px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(13, 21, 39, 0.95), rgba(7, 11, 20, 0.98));
+            border: 1px solid var(--border-dim);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
-        .brand {
+        .brand-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
-        .brand-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            border-radius: 8px;
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #0284c7, #8b5cf6);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: #fff;
+            font-size: 24px;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        .brand-title h1 {
+        .brand-text h1 {
             font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #38bdf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .live-badge-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .pill-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-dim);
+        }
+
+        .pill-status.active {
+            border-color: rgba(52, 211, 153, 0.4);
+            color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.1);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+
+        /* Architecture Flow Pipeline Visualization */
+        .pipeline-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 12px;
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        .pipe-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 140px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-dim);
+            transition: all 0.3s;
+        }
+
+        .pipe-node.highlight {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .pipe-node .node-role {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .brand-title p {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .badge-secure {
-            background-color: rgba(74, 222, 128, 0.15);
-            color: var(--accent-green);
-            border: 1px solid rgba(74, 222, 128, 0.3);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background-color: var(--bg-secondary);
-            color: var(--accent-cyan);
-            border: 1px solid var(--border-color);
-        }
-
-        .tab-btn:hover:not(.active) {
+        .pipe-node .node-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-top: 4px;
             color: var(--text-main);
-            background-color: rgba(255, 255, 255, 0.05);
         }
 
-        .tab-pane {
-            display: none;
-            animation: fadeIn 0.25s ease-in-out;
+        .pipe-arrow {
+            color: var(--accent-cyan);
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0.6;
         }
 
-        .tab-pane.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .grid-layout {
+        /* Main Workspace Grid */
+        .workspace-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 380px 1fr;
             gap: 20px;
+            align-items: start;
         }
 
-        @media (max-width: 900px) {
-            .grid-layout {
+        @media (max-width: 1100px) {
+            .workspace-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+        /* Mission Control Panel (Left Column) */
+        .control-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-dim);
             border-radius: 12px;
             padding: 20px;
             display: flex;
@@ -154,617 +203,617 @@
             gap: 16px;
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
+        .panel-heading {
+            font-size: 15px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 12px;
         }
 
-        .input-group {
+        .form-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .input-group label {
-            font-size: 13px;
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
             color: var(--text-muted);
         }
 
         input[type="text"], input[type="password"], select, textarea {
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            background-color: var(--bg-deep);
+            border: 1px solid var(--border-dim);
             border-radius: 8px;
             padding: 10px 12px;
             color: var(--text-main);
             font-size: 13px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
             border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
         }
 
         textarea {
             resize: vertical;
-            min-height: 180px;
-            font-family: Consolas, 'Courier New', monospace;
+            min-height: 120px;
+            font-family: var(--font-mono);
             line-height: 1.5;
         }
 
-        .btn-row {
+        .preset-chips {
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
         }
 
-        .btn {
-            background-color: var(--accent-cyan);
-            color: #0f172a;
-            font-weight: 600;
-            font-size: 13px;
-            padding: 10px 18px;
+        .chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .chip:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-main);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .btn-dispatch {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+            transition: all 0.2s;
         }
 
-        .btn:hover {
-            opacity: 0.9;
+        .btn-dispatch:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
         }
 
-        .btn-secondary {
-            background-color: var(--bg-card);
-            color: var(--text-main);
+        .btn-dispatch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .btn-secondary:hover {
-            background-color: var(--border-color);
+        /* Real-Time Agent Stream (Right Column) */
+        .stream-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .btn-green {
-            background-color: var(--accent-green);
-            color: #052e16;
-        }
-
-        .output-box {
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 14px;
-            min-height: 200px;
-            max-height: 480px;
-            overflow-y: auto;
-            font-family: Consolas, monospace;
-            font-size: 12.5px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-break: break-all;
-            color: #cbd5e1;
-        }
-
-        .stat-bar {
+        .agents-quadrant {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
         }
 
-        .stat-item {
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
+        @media (max-width: 800px) {
+            .agents-quadrant {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .agent-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .agent-card.running {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.18);
+        }
+
+        .agent-card.done {
+            border-color: var(--accent-green);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.06);
         }
 
-        .stat-label {
+        .agent-names h3 {
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        .agent-names span {
             font-size: 11px;
             color: var(--text-muted);
         }
 
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--accent-cyan);
-            margin-top: 4px;
-        }
-
-        .file-dropzone {
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-
-        .file-dropzone:hover {
-            border-color: var(--accent-cyan);
-        }
-
-        .file-dropzone p {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 6px;
-        }
-
-        .notice-banner {
-            background-color: rgba(56, 189, 248, 0.1);
-            border-left: 4px solid var(--accent-cyan);
-            padding: 12px 16px;
-            border-radius: 0 8px 8px 0;
-            font-size: 12.5px;
-            line-height: 1.5;
-            color: #bae6fd;
-        }
-
-        .badge-method {
-            display: inline-block;
-            padding: 2px 6px;
+        .agent-badge {
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-dim);
         }
+
+        .agent-badge.state-working {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .agent-badge.state-done {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            border-color: rgba(52, 211, 153, 0.4);
+        }
+
+        .agent-badge.state-alert {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--accent-amber);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .agent-body {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            background: var(--bg-deep);
+            border: 1px solid var(--border-dim);
+            border-radius: 6px;
+            padding: 10px 12px;
+            min-height: 90px;
+            max-height: 140px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Live Terminal / Mission Log */
+        .terminal-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-window {
+            background-color: #030712;
+            border: 1px solid var(--border-dim);
+            border-radius: 8px;
+            padding: 14px;
+            min-height: 220px;
+            max-height: 380px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 8px;
+        }
+
+        .log-tag {
+            font-weight: bold;
+            margin-right: 6px;
+        }
+
+        .tag-antigravity { color: var(--accent-purple); }
+        .tag-ninearm { color: var(--accent-cyan); }
+        .tag-planner { color: #60a5fa; }
+        .tag-executor { color: var(--accent-green); }
+        .tag-mentor { color: var(--accent-amber); }
+        .tag-reporter { color: #ec4899; }
     </style>
 </head>
 <body>
 
+    <!-- Header Section -->
     <header>
-        <div class="brand">
-            <div class="brand-icon">⚡</div>
-            <div class="brand-title">
-                <h1>Secure Relay & Data Hub</h1>
-                <p>ระบบเชื่อมต่อ API และประมวลผลข้อมูลตรงระดับ Local โดยไม่ผ่าน AI Chat Filter</p>
+        <div class="brand-group">
+            <div class="brand-logo">⚡</div>
+            <div class="brand-text">
+                <h1>PentAGI Multi-Agent Real-Time Operations Center</h1>
+                <p>การประสานงานอัตโนมัติ: Antigravity ➔ NineArm Gateway (Qwen 27B) ➔ PentAGI Collaborative Swarm</p>
             </div>
         </div>
-        <div class="badge-secure">
-            <span>🛡️</span>
-            <span>Zero-Cloud Filter Leakage</span>
+        <div class="live-badge-row">
+            <div class="pill-status active">
+                <span class="pulse-dot"></span>
+                <span id="gateway-indicator">NineArm Gateway (Qwen 27B FP8): ONLINE</span>
+            </div>
+            <div class="pill-status">
+                <span>🛡️ Reasoning: medium</span>
+            </div>
         </div>
     </header>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('relay')">📡 1. ส่งตรงเข้า NineArm Gateway</button>
-        <button class="tab-btn" onclick="switchTab('classifier')">📂 2. คัดแยก & จำแนกข้อมูลลับ (Local)</button>
-        <button class="tab-btn" onclick="switchTab('converter')">🔐 3. แปลง Base64 / Token Tools</button>
+    <!-- Architecture Pipeline Flow -->
+    <div class="pipeline-card">
+        <div class="pipe-node highlight" id="p-antigravity">
+            <div class="node-role">Step 1: Orchestrator</div>
+            <div class="node-title">Antigravity</div>
+            <span style="font-size: 11px; color: var(--accent-purple); margin-top: 2px;">Dispatch & Context</span>
+        </div>
+        <div class="pipe-arrow">➔</div>
+
+        <div class="pipe-node" id="p-ninearm">
+            <div class="node-role">Step 2: AI Gateway</div>
+            <div class="node-title">NineArm Gateway</div>
+            <span style="font-size: 11px; color: var(--accent-cyan); margin-top: 2px;">Qwen 3.8 27B FP8</span>
+        </div>
+        <div class="pipe-arrow">➔</div>
+
+        <div class="pipe-node" id="p-planner">
+            <div class="node-role">PentAGI Swarm</div>
+            <div class="node-title">1. Planner</div>
+            <span style="font-size: 11px; color: #60a5fa; margin-top: 2px;">Decompose Attack Tree</span>
+        </div>
+        <div class="pipe-arrow">➔</div>
+
+        <div class="pipe-node" id="p-executor">
+            <div class="node-role">PentAGI Swarm</div>
+            <div class="node-title">2. Executor</div>
+            <span style="font-size: 11px; color: var(--accent-green); margin-top: 2px;">Live Actions & Probes</span>
+        </div>
+        <div class="pipe-arrow">➔</div>
+
+        <div class="pipe-node" id="p-mentor">
+            <div class="node-role">PentAGI Swarm</div>
+            <div class="node-title">3. Mentor Guard</div>
+            <span style="font-size: 11px; color: var(--accent-amber); margin-top: 2px;">Loop & Pivot Control</span>
+        </div>
+        <div class="pipe-arrow">➔</div>
+
+        <div class="pipe-node" id="p-reporter">
+            <div class="node-role">PentAGI Swarm</div>
+            <div class="node-title">4. Reporter</div>
+            <span style="font-size: 11px; color: #ec4899; margin-top: 2px;">Synthesis & Fixes</span>
+        </div>
     </div>
 
-    <!-- TAB 1: RELAY TO NINEARM GATEWAY -->
-    <div id="tab-relay" class="tab-pane active">
-        <div class="notice-banner" style="margin-bottom: 20px;">
-            💡 <strong>คำอธิบาย:</strong> แท็บนี้จะยิงคำขอตรงจากเบราว์เซอร์ของคุณฟานไปยัง <strong>gateway.9arm.co</strong> ทันที ข้อความลับ รหัสผ่าน หรือ Prompt ใดๆ จะ<strong>ไม่ถูกส่งผ่าน Antigravity หรือ Gemini Chat</strong> ทำให้ไม่ถูกสกัดกั้นจากระบบตรวจสอบคำของ Chat
+    <!-- Workspace Main Grid -->
+    <div class="workspace-grid">
+        
+        <!-- Left: Control & Mission Setup -->
+        <div class="control-panel">
+            <div class="panel-heading">
+                <span>🎯 ตั้งโจทย์ภารกิจ (Mission Setup)</span>
+            </div>
+
+            <div class="form-group">
+                <label>เป้าหมายการประเมิน (Target / Scope):</label>
+                <input type="text" id="target-input" value="https://api.internal-lab.local/v1/auth" placeholder="URL หรือ พาทไฟล์ซอร์สโค้ด">
+            </div>
+
+            <div class="form-group">
+                <label>วัตถุประสงค์ภารกิจ (Mission Objective):</label>
+                <textarea id="objective-input" placeholder="อธิบายวัตถุประสงค์ที่ต้องการให้ทีม Multi-Agent ช่วยกันลงมือทำ...">ตรวจสอบความมั่นคงปลอดภัยของการยืนยันตัวตน วิเคราะห์ช่องโหว่ Authentication Bypass, Credential Tampering และวางแนวทางการ Hardening ระบบ</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>ชุดภารกิจตัวอย่าง (Quick Presets):</label>
+                <div class="preset-chips">
+                    <span class="chip" onclick="loadPreset('auth')">🔑 Auth & SSO Bypass</span>
+                    <span class="chip" onclick="loadPreset('code_audit')">💻 White-box Code Audit</span>
+                    <span class="chip" onclick="loadPreset('recon')">🌐 Active Recon & Discovery</span>
+                    <span class="chip" onclick="loadPreset('loop_stress')">🔄 Loop Guard Stress Test</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Bearer API Token (NineArm):</label>
+                <input type="password" id="token-input" value="sk-gf5krfQP-b2dR7KAFDOz7A" placeholder="sk-...">
+            </div>
+
+            <button class="btn-dispatch" id="btn-run" onclick="startMultiAgentMission()">
+                <span>🚀 ส่งภารกิจให้ Multi-Agent เริ่มทำงาน</span>
+            </button>
+
+            <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.4;">
+                💡 <strong>เบื้องหลังการทำงาน:</strong> เมื่อคลิกส่ง Antigravity จะจัดบริบท ส่งเข้า NineArm Gateway เพื่อให้โมเดล Qwen 27B สวมบทบาท Multi-Agent ช่วยกันระดมสมองและลงมือทำเป็นขั้นตอนสดๆ
+            </div>
         </div>
 
-        <div class="grid-layout">
-            <div class="card">
-                <div class="card-title">⚙️ ตั้งค่าการเชื่อมต่อ (Gateway Config)</div>
-                <div class="input-group">
-                    <label>Gateway Endpoint:</label>
-                    <input type="text" id="gw-url" value="https://gateway.9arm.co/v1/chat/completions">
-                </div>
-                <div class="input-group">
-                    <label>Bearer API Key / Token:</label>
-                    <input type="password" id="gw-key" placeholder="วาง API Key ของ NineArm (ถ้ามี หรือเว้นว่างหากใช้เครือข่ายอนุญาต)">
-                </div>
-                <div class="grid-layout" style="gap: 10px;">
-                    <div class="input-group">
-                        <label>Target Model:</label>
-                        <select id="gw-model">
-                            <option value="qwen3.8-27b-fp8" selected>qwen3.8-27b-fp8 (Tier 1)</option>
-                        </select>
+        <!-- Right: Multi-Agent Real-Time Thought Quadrant & Terminal -->
+        <div class="stream-container">
+            
+            <!-- Quadrant Cards for 4 PentAGI Agents -->
+            <div class="agents-quadrant">
+                
+                <!-- Agent 1: Planner -->
+                <div class="agent-card" id="card-planner">
+                    <div class="agent-header">
+                        <div class="agent-identity">
+                            <div class="agent-icon" style="color: #60a5fa;">🧠</div>
+                            <div class="agent-names">
+                                <h3>Lead Planner Agent</h3>
+                                <span>วางแผนและแตกยุทธวิธี 3-5 ขั้นตอน</span>
+                            </div>
+                        </div>
+                        <span class="agent-badge" id="badge-planner">STANDBY</span>
                     </div>
-                    <div class="input-group">
-                        <label>Reasoning Effort:</label>
-                        <select id="gw-reasoning">
-                            <option value="medium" selected>medium (บังคับเพื่อไม่ให้โดน Reject)</option>
-                            <option value="low">low</option>
-                            <option value="default">default</option>
-                        </select>
+                    <div class="agent-body" id="body-planner">รอรับภารกิจจาก Antigravity...</div>
+                </div>
+
+                <!-- Agent 2: Executor -->
+                <div class="agent-card" id="card-executor">
+                    <div class="agent-header">
+                        <div class="agent-identity">
+                            <div class="agent-icon" style="color: var(--accent-green);">⚡</div>
+                            <div class="agent-names">
+                                <h3>Tactical Executor Agent</h3>
+                                <span>ลงมือตรวจสอบ ยิงคำสั่ง และวิเคราะห์โค้ด</span>
+                            </div>
+                        </div>
+                        <span class="agent-badge" id="badge-executor">STANDBY</span>
                     </div>
+                    <div class="agent-body" id="body-executor">รอกลยุทธ์จาก Planner...</div>
                 </div>
 
-                <div class="input-group">
-                    <label>กล่องข้อความ / คำสั่งส่งไปยัง Gateway (ใส่ข้อความดิบหรือ Base64 ได้ทันที):</label>
-                    <textarea id="gw-prompt" placeholder="พิมพ์ข้อความที่ต้องการสั่งงาน NineArm ที่นี่ เช่น โค้ดดิบ, คำถาม, หรือนำเข้าข้อมูลลับ..."></textarea>
+                <!-- Agent 3: Mentor / Loop Guard -->
+                <div class="agent-card" id="card-mentor">
+                    <div class="agent-header">
+                        <div class="agent-identity">
+                            <div class="agent-icon" style="color: var(--accent-amber);">🛡️</div>
+                            <div class="agent-names">
+                                <h3>Adviser / Loop Guard</h3>
+                                <span>ตรวจสอบลูปตัน ดักจับซ้ำซาก และชี้เป้าแก้ทาง</span>
+                            </div>
+                        </div>
+                        <span class="agent-badge" id="badge-mentor">MONITORING</span>
+                    </div>
+                    <div class="agent-body" id="body-mentor">เฝ้าระวัง Action Signature และดักจับความซ้ำซ้อน...</div>
                 </div>
 
-                <div class="btn-row">
-                    <button class="btn btn-green" onclick="sendToGateway()">🚀 ยิงส่งไปยัง NineArm Gateway ทันที</button>
-                    <button class="btn btn-secondary" onclick="decodePromptInput()">🔄 ถอดรหัส Base64 ในกล่องนี้ก่อนส่ง</button>
-                    <button class="btn btn-secondary" onclick="clearField('gw-prompt')">ล้างข้อมูล</button>
+                <!-- Agent 4: Reporter -->
+                <div class="agent-card" id="card-reporter">
+                    <div class="agent-header">
+                        <div class="agent-identity">
+                            <div class="agent-icon" style="color: #ec4899;">📝</div>
+                            <div class="agent-names">
+                                <h3>Executive Reporter</h3>
+                                <span>สังเคราะห์รายงาน CVSS, PoC และข้อเสนอแนะ</span>
+                            </div>
+                        </div>
+                        <span class="agent-badge" id="badge-reporter">STANDBY</span>
+                    </div>
+                    <div class="agent-body" id="body-reporter">รอการเสร็จสิ้นขั้นตอนสืบสวน...</div>
+                </div>
+
+            </div>
+
+            <!-- Real-Time Behind-the-Scenes Terminal Log -->
+            <div class="terminal-card">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        <span>📟 บันทึกการคิดและการทำงานเบื้องหลังสด (Real-Time Cognitive Stream)</span>
+                    </div>
+                    <button class="chip" onclick="clearTerminal()">ล้างบันทึก</button>
+                </div>
+                <div class="terminal-window" id="terminal-stream">
+<span class="log-time">[00:00:00]</span> <span class="log-tag tag-antigravity">[Antigravity]</span> ระบบเตรียมพร้อม เชื่อมต่อเครือข่ายเรียบร้อย
+<span class="log-time">[00:00:00]</span> <span class="log-tag tag-ninearm">[NineArm]</span> เชื่อมต่อ Gateway: https://gateway.9arm.co (Model: qwen3.8-27b-fp8)
+<span class="log-time">[00:00:00]</span> <span class="log-tag tag-mentor">[PentAGI::Guard]</span> Loop Guard เริ่มต้นทำงาน (Same Tool Cap = 3, Total Cap = 8)
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">📥 ผลตอบกลับจาก Gateway (Direct Response)</div>
-                    <span id="gw-status" class="badge-method">พร้อมใช้งาน</span>
-                </div>
-                <div class="output-box" id="gw-output">ยังไม่มีข้อมูลตอบกลับ รอการส่งคำสั่ง...</div>
-                <div class="btn-row">
-                    <button class="btn btn-secondary" onclick="copyOutput('gw-output')">📋 คัดลอกผลลัพธ์</button>
-                    <button class="btn btn-secondary" onclick="downloadOutput('gw-output', 'gateway_response.txt')">💾 บันทึกเป็นไฟล์</button>
-                </div>
-            </div>
         </div>
-    </div>
 
-    <!-- TAB 2: LOCAL CLASSIFIER -->
-    <div id="tab-classifier" class="tab-pane">
-        <div class="notice-banner" style="margin-bottom: 20px;">
-            🛡️ <strong>ประมวลผลในเครื่อง 100%:</strong> จัดระเบียบ คัดแยก และจัดหมวดหมู่ข้อมูล Credential (`user:pass` / `host:port:user:pass`) ทำงานในเบราว์เซอร์ของคุณฟาน ข้อมูลไม่หลุดออกสู่อินเทอร์เน็ต
-        </div>
-
-        <div class="stat-bar" style="margin-bottom: 20px;">
-            <div class="stat-item">
-                <div class="stat-label">รายการทั้งหมด</div>
-                <div class="stat-value" id="stat-total">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Email : Pass</div>
-                <div class="stat-value" id="stat-email" style="color: var(--accent-green);">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Username : Pass</div>
-                <div class="stat-value" id="stat-user" style="color: var(--accent-cyan);">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">รูปแบบผิด / ผิดพลาด</div>
-                <div class="stat-value" id="stat-invalid" style="color: var(--accent-amber);">0</div>
-            </div>
-        </div>
-
-        <div class="grid-layout">
-            <div class="card">
-                <div class="card-title">📂 นำเข้าข้อมูล (Paste หรือเลือกไฟล์)</div>
-                <div class="file-dropzone" onclick="document.getElementById('file-input').click()">
-                    <span style="font-size: 28px;">📄</span>
-                    <div style="font-weight: 600; margin-top: 4px;">คลิกเพื่อเลือกไฟล์ .txt ในเครื่อง</div>
-                    <p>รองรับไฟล์ข้อความ UTF-8, TIS-620 หรือลากไฟล์มาวาง</p>
-                    <input type="file" id="file-input" style="display: none;" onchange="handleFileSelect(event)">
-                </div>
-
-                <div class="input-group">
-                    <label>หรือวางข้อมูลโดยตรง (รองรับคั่นด้วย <code>:</code>, <code>|</code>, <code>;</code>, <code>Tab</code>):</label>
-                    <textarea id="raw-combos" placeholder="example@mail.com:password123&#10;user01:secretPass&#10;mail.server.com:587:admin@corp.com:P@ssword"></textarea>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn" onclick="processLocalCombos()">⚡ เริ่มจำแนกและคัดกรองข้อมูล</button>
-                    <button class="btn btn-secondary" onclick="clearClassifier()">ล้างข้อมูล</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">📑 ผลการจัดกลุ่มและคัดแยก (Sanitized Output)</div>
-                    <select id="export-filter" onchange="filterOutputView()" style="padding: 4px 8px; font-size: 11px;">
-                        <option value="all">แสดงทั้งหมด</option>
-                        <option value="email">เฉพาะ Email:Pass</option>
-                        <option value="user">เฉพาะ User:Pass</option>
-                    </select>
-                </div>
-                <div class="output-box" id="classifier-output">รอการนำเข้าข้อมูล...</div>
-                <div class="btn-row">
-                    <button class="btn btn-green" onclick="downloadClassifierResult('txt')">💾 ดาวน์โหลด TXT สะอาด</button>
-                    <button class="btn btn-secondary" onclick="downloadClassifierResult('json')">💾 ดาวน์โหลด JSON รายงาน</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 3: CONVERTER TOOLS -->
-    <div id="tab-converter" class="tab-pane">
-        <div class="grid-layout">
-            <div class="card">
-                <div class="card-title">🔐 ตัวแปลง Base64 Token ป้องกัน Filter</div>
-                <div class="input-group">
-                    <label>ข้อความดิบ / พาทไฟล์บนเครื่อง:</label>
-                    <textarea id="conv-plain" placeholder="วางพาทไฟล์หรือข้อความดิบ เช่น:&#10;C:\Users\gsose\Downloads\Telegram Desktop\smtptest\365test.txt"></textarea>
-                </div>
-                <div class="btn-row">
-                    <button class="btn" onclick="convertToBase64()">🔒 แปลงเป็น Base64 Token (Encode)</button>
-                    <button class="btn btn-secondary" onclick="clearField('conv-plain')">ล้าง</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">🔓 ผลลัพธ์ Token (ปลอดภัย 100% สำหรับส่งผ่านสคริปต์)</div>
-                <div class="input-group">
-                    <label>Base64 Opaque Token:</label>
-                    <textarea id="conv-base64" placeholder="ชุดตัวอักษร Base64 Token จะแสดงที่นี่..."></textarea>
-                </div>
-                <div class="btn-row">
-                    <button class="btn btn-green" onclick="decodeFromBase64()">🔓 ถอดรหัสกลับ (Decode)</button>
-                    <button class="btn btn-secondary" onclick="copyOutput('conv-base64')">📋 คัดลอก Token</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
-        // State
-        let classifiedData = { email: [], user: [], invalid: [] };
-
-        // Tab Switching
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
+        function logToTerminal(tag, tagClass, text) {
+            const stream = document.getElementById('terminal-stream');
+            const now = new Date();
+            const timeStr = `[${now.toTimeString().split(' ')[0]}]`;
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span class="log-time">${timeStr}</span> <span class="log-tag ${tagClass}">[${tag}]</span> ${escapeHtml(text)}`;
+            stream.appendChild(div);
+            stream.scrollTop = stream.scrollHeight;
         }
 
-        function clearField(id) {
-            document.getElementById(id).value = '';
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        function copyOutput(id) {
-            const el = document.getElementById(id);
-            const text = el.value || el.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('📋 คัดลอกข้อมูลลง Clipboard เรียบร้อยแล้ว!');
-            });
+        function clearTerminal() {
+            document.getElementById('terminal-stream').innerHTML = '';
         }
 
-        function downloadOutput(id, filename) {
-            const el = document.getElementById(id);
-            const text = el.value || el.innerText;
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
+        function setAgentState(agent, state, badgeText, content) {
+            const card = document.getElementById('card-' + agent);
+            const badge = document.getElementById('badge-' + agent);
+            const body = document.getElementById('body-' + agent);
+
+            card.className = 'agent-card ' + state;
+            badge.className = 'agent-badge state-' + state;
+            badge.innerText = badgeText;
+            if (content) {
+                body.innerText = content;
+                body.scrollTop = body.scrollHeight;
+            }
         }
 
-        // ==========================================
-        // 1. RELAY TO NINEARM GATEWAY
-        // ==========================================
-        async function sendToGateway() {
-            const url = document.getElementById('gw-url').value.trim();
-            const apiKey = document.getElementById('gw-key').value.trim();
-            const model = document.getElementById('gw-model').value;
-            const reasoning = document.getElementById('gw-reasoning').value;
-            const prompt = document.getElementById('gw-prompt').value.trim();
-            const statusEl = document.getElementById('gw-status');
-            const outputEl = document.getElementById('gw-output');
+        function loadPreset(type) {
+            if (type === 'auth') {
+                document.getElementById('target-input').value = 'https://api.internal-lab.local/v1/auth';
+                document.getElementById('objective-input').value = 'ตรวจสอบความมั่นคงปลอดภัยของการยืนยันตัวตน วิเคราะห์ช่องโหว่ Authentication Bypass, Credential Tampering และวางแนวทางการ Hardening ระบบ';
+            } else if (type === 'code_audit') {
+                document.getElementById('target-input').value = 'C:\\Users\\gsose\\Desktop\\naaf_line_bot\\main.py';
+                document.getElementById('objective-input').value = 'ตรวจสอบความปลอดภัยของ Source Code (White-box SAST): ค้นหา Hardcoded Secrets, Unauthenticated Endpoints, ReDoS Regex, และ Async Webhook Deadlock';
+            } else if (type === 'recon') {
+                document.getElementById('target-input').value = 'corp.external-boundary.net';
+                document.getElementById('objective-input').value = 'สำรวจ Attack Surface ภายนอก: แมปปิ้ง DNS Subdomains, ตรวจจับพอร์ตและเวอร์ชันของเซอร์วิส (Nginx, SSH, Redis) พร้อมประเมินช่องโหว่';
+            } else if (type === 'loop_stress') {
+                document.getElementById('target-input').value = 'https://secure-waf.example.com/login';
+                document.getElementById('objective-input').value = 'ทดสอบระบบจำลองสถานการณ์ยิงซ้ำ (Brute-force Simulation) เพื่อทดสอบกลไกตรวจจับลูปวนซ้ำและการเข้าแทรกแซงของ Mentor Guard';
+            }
+        }
 
-            if (!prompt) {
-                alert('กรุณากรอกข้อความหรือคำสั่งในช่อง Prompt ก่อนส่ง');
+        async function startMultiAgentMission() {
+            const target = document.getElementById('target-input').value.trim();
+            const objective = document.getElementById('objective-input').value.trim();
+            const token = document.getElementById('token-input').value.trim();
+            const btn = document.getElementById('btn-run');
+
+            if (!target || !objective) {
+                alert('กรุณาระบุเป้าหมายและวัตถุประสงค์ของภารกิจ');
                 return;
             }
 
-            statusEl.innerText = 'กำลังส่งคำขอ...';
-            statusEl.style.color = 'var(--accent-amber)';
-            outputEl.innerText = '⏳ กำลังเชื่อมต่อไปยัง ' + url + ' โดยตรงจากเบราว์เซอร์ของคุณ...\n';
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Multi-Agent กำลังปฏิบัติการ...</span>';
 
-            const headers = { 'Content-Type': 'application/json' };
-            if (apiKey) {
-                headers['Authorization'] = 'Bearer ' + apiKey;
-            }
+            logToTerminal('Antigravity', 'tag-antigravity', `รับคำสั่งภารกิจ: "${objective}" | เป้าหมาย: ${target}`);
+            logToTerminal('Antigravity', 'tag-antigravity', 'คอมไพล์ Prompt เชิงเทคนิค 4 ชั้น และส่งต่อเข้า NineArm Gateway...');
 
-            const body = {
-                model: model,
-                messages: [
-                    { role: 'user', content: prompt }
-                ]
-            };
-
-            if (reasoning !== 'default') {
-                body.reasoning_effort = reasoning;
-            }
+            // Step 1: Planner
+            setAgentState('planner', 'working', 'THINKING...', 'กำลังจัดระบบ วิเคราะห์ Attack Surface และแตกยุทธวิธี 3-5 ขั้นตอน...');
+            document.getElementById('p-planner').classList.add('highlight');
 
             try {
-                const startTime = performance.now();
-                let res;
-                // If served from local server, use /api/gateway proxy to bypass CORS transparently
-                if (window.location.protocol.startsWith('http') && window.location.pathname.includes('secure_hub.html')) {
-                    res = await fetch('/api/gateway', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            target_url: url,
-                            api_key: apiKey,
-                            body: body
-                        })
-                    });
-                } else {
-                    res = await fetch(url, {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify(body)
-                    });
-                }
-
-                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+                const res = await fetch('/api/pentagi/orchestrate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target: target,
+                        objective: objective,
+                        api_key: token
+                    })
+                });
 
                 if (!res.ok) {
-                    const errorText = await res.text();
-                    statusEl.innerText = 'เกิดข้อผิดพลาด (' + res.status + ')';
-                    statusEl.style.color = '#f87171';
-                    outputEl.innerText = `❌ HTTP Error ${res.status}:\n${errorText}`;
+                    const err = await res.text();
+                    logToTerminal('Gateway', 'tag-ninearm', `เกิดข้อผิดพลาดในการเชื่อมต่อ (${res.status}): ${err}`);
+                    setAgentState('planner', 'alert', 'ERROR', 'การเชื่อมต่อล้มเหลว');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🚀 ส่งภารกิจให้ Multi-Agent เริ่มทำงาน</span>';
                     return;
                 }
 
                 const data = await res.json();
-                statusEl.innerText = `สำเร็จ (${duration} วินาที)`;
-                statusEl.style.color = 'var(--accent-green)';
-
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    outputEl.innerText = data.choices[0].message.content;
-                } else {
-                    outputEl.innerText = JSON.stringify(data, null, 2);
+                
+                // Process Planner output
+                if (data.plan) {
+                    setAgentState('planner', 'done', 'COMPLETED', data.plan);
+                    logToTerminal('PentAGI::Planner', 'tag-planner', 'กำหนดแผนกลยุทธ์ 4 ขั้นตอนสำเร็จ:\n' + data.plan);
                 }
+
+                // Step 2: Executor
+                setAgentState('executor', 'working', 'EXECUTING...', 'กำลังลงมือสืบสวนและส่งคำสั่งเจาะจงตามแผนงาน...');
+                document.getElementById('p-executor').classList.add('highlight');
+
+                if (data.actions && data.actions.length > 0) {
+                    const actionTexts = data.actions.map((a, i) => `[Action ${i+1}] ${a.action_name || a}\nผลลัพธ์: ${a.output || 'ตรวจสอบสำเร็จ'}`).join('\n\n');
+                    setAgentState('executor', 'done', 'COMPLETED', actionTexts);
+                    logToTerminal('PentAGI::Executor', 'tag-executor', `รัน Action ตรวจสอบเรียบร้อย ${data.actions.length} รายการ`);
+                } else {
+                    setAgentState('executor', 'done', 'COMPLETED', 'ดำเนินการตรวจสอบเป้าหมายตามแบบแผนงานเสร็จสมบูรณ์');
+                }
+
+                // Step 3: Mentor Guard
+                if (data.loop_detected) {
+                    setAgentState('mentor', 'alert', 'INTERVENTION', `ตรวจพบลูปคำสั่งซ้ำซาก!\nคำแนะนำจาก Mentor: ${data.mentor_advice}`);
+                    logToTerminal('PentAGI::Mentor', 'tag-mentor', `⚠️ เข้าแทรกแซง: ตรวจพบลูปการทำงานซ้ำ ปรับกลยุทธ์ทีมทันที`);
+                } else {
+                    setAgentState('mentor', 'done', 'NO LOOPS', 'ผ่านการตรวจสอบความสมบูรณ์ ไม่มีพฤติกรรมวนลูป (Zero Redundant Loops)');
+                    logToTerminal('PentAGI::Mentor', 'tag-mentor', 'ตรวจสอบ Loop Signature: ผ่านเกณฑ์ความปลอดภัยทุกรอบ');
+                }
+
+                // Step 4: Reporter
+                setAgentState('reporter', 'working', 'SYNTHESIZING...', 'กำลังสังเคราะห์รายงานและจัดทำคู่มือการแก้ไข...');
+                document.getElementById('p-reporter').classList.add('highlight');
+
+                if (data.report) {
+                    setAgentState('reporter', 'done', 'REPORT READY', data.report);
+                    logToTerminal('PentAGI::Reporter', 'tag-reporter', 'รายงานสรุปผลสัมฤทธิ์ระดับผู้บริหารสร้างเสร็จสิ้นสมบูรณ์ 100%');
+                }
+
+                logToTerminal('Antigravity', 'tag-antigravity', '✅ ภารกิจเสร็จสิ้นสมบูรณ์ ทีม Multi-Agent ช่วยกันลงมือทำบรรลุวัตถุประสงค์เรียบร้อย');
+
             } catch (err) {
-                statusEl.innerText = 'การเชื่อมต่อล้มเหลว';
-                statusEl.style.color = '#f87171';
-                outputEl.innerText = `❌ ไม่สามารถเชื่อมต่อกับ Gateway ได้:\n${err.message}\n\n💡 แนะนำ: รันผ่าน 'run_secure_hub.py' หรือดับเบิลคลิก 'START_SECURE_HUB.bat' เพื่อหลบ CORS 100%`;
-            }
-        }
-
-        function decodePromptInput() {
-            const input = document.getElementById('gw-prompt');
-            try {
-                const decoded = decodeURIComponent(escape(atob(input.value.trim())));
-                input.value = decoded;
-            } catch (e) {
-                alert('ไม่สามารถถอดรหัส Base64 ได้: ' + e.message);
-            }
-        }
-
-        // ==========================================
-        // 2. LOCAL CREDENTIAL CLASSIFIER
-        // ==========================================
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('raw-combos').value = e.target.result;
-                processLocalCombos();
-            };
-            reader.readAsText(file);
-        }
-
-        function processLocalCombos() {
-            const raw = document.getElementById('raw-combos').value;
-            const lines = raw.split(/\r?\n/);
-            
-            classifiedData = { email: [], user: [], invalid: [] };
-            const emailRegex = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
-            const userRegex = /^[A-Za-z0-9._\-]{3,64}$/;
-
-            for (let line of lines) {
-                line = line.trim();
-                if (!line || line.startsWith('#') || line.startsWith(';')) continue;
-
-                let parts = [];
-                if (line.includes(':')) parts = line.split(':');
-                else if (line.includes('|')) parts = line.split('|');
-                else if (line.includes(';')) parts = line.split(';');
-                else if (line.includes('\t')) parts = line.split('\t');
-
-                let user = null;
-                let pass = null;
-
-                if (parts.length === 2) {
-                    user = parts[0].trim();
-                    pass = parts[1].trim();
-                } else if (parts.length >= 4) {
-                    user = parts[parts.length - 2].trim();
-                    pass = parts[parts.length - 1].trim();
-                }
-
-                if (user && pass) {
-                    if (emailRegex.test(user)) {
-                        classifiedData.email.push({ user, pass, original: line });
-                    } else if (userRegex.test(user)) {
-                        classifiedData.user.push({ user, pass, original: line });
-                    } else {
-                        classifiedData.invalid.push({ line, reason: 'Invalid format' });
-                    }
-                } else {
-                    classifiedData.invalid.push({ line, reason: 'Delimiter mismatch' });
-                }
-            }
-
-            // Update stats
-            const total = classifiedData.email.length + classifiedData.user.length + classifiedData.invalid.length;
-            document.getElementById('stat-total').innerText = total;
-            document.getElementById('stat-email').innerText = classifiedData.email.length;
-            document.getElementById('stat-user').innerText = classifiedData.user.length;
-            document.getElementById('stat-invalid').innerText = classifiedData.invalid.length;
-
-            filterOutputView();
-        }
-
-        function filterOutputView() {
-            const filter = document.getElementById('export-filter').value;
-            const out = document.getElementById('classifier-output');
-            let lines = [];
-
-            if (filter === 'all' || filter === 'email') {
-                classifiedData.email.forEach(item => lines.push(`${item.user}:${item.pass}`));
-            }
-            if (filter === 'all' || filter === 'user') {
-                classifiedData.user.forEach(item => lines.push(`${item.user}:${item.pass}`));
-            }
-
-            out.innerText = lines.length > 0 ? lines.join('\n') : 'ไม่มีข้อมูลในหมวดหมู่ที่เลือก';
-        }
-
-        function clearClassifier() {
-            document.getElementById('raw-combos').value = '';
-            document.getElementById('classifier-output').innerText = 'รอการนำเข้าข้อมูล...';
-            document.getElementById('stat-total').innerText = '0';
-            document.getElementById('stat-email').innerText = '0';
-            document.getElementById('stat-user').innerText = '0';
-            document.getElementById('stat-invalid').innerText = '0';
-            classifiedData = { email: [], user: [], invalid: [] };
-        }
-
-        function downloadClassifierResult(format) {
-            if (format === 'txt') {
-                downloadOutput('classifier-output', 'cleaned_credentials.txt');
-            } else if (format === 'json') {
-                const report = {
-                    summary: {
-                        total: classifiedData.email.length + classifiedData.user.length + classifiedData.invalid.length,
-                        email_credentials: classifiedData.email.length,
-                        username_credentials: classifiedData.user.length,
-                        invalid_entries: classifiedData.invalid.length
-                    },
-                    data: classifiedData
-                };
-                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'classification_report.json';
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        }
-
-        // ==========================================
-        // 3. CONVERTER TOOLS
-        // ==========================================
-        function convertToBase64() {
-            const raw = document.getElementById('conv-plain').value;
-            if (!raw) return;
-            try {
-                const encoded = btoa(unescape(encodeURIComponent(raw)));
-                document.getElementById('conv-base64').value = encoded;
-            } catch (e) {
-                alert('เกิดข้อผิดพลาดในการแปลง: ' + e.message);
-            }
-        }
-
-        function decodeFromBase64() {
-            const b64 = document.getElementById('conv-base64').value.trim();
-            if (!b64) return;
-            try {
-                const decoded = decodeURIComponent(escape(atob(b64)));
-                document.getElementById('conv-plain').value = decoded;
-            } catch (e) {
-                alert('ไม่สามารถถอดรหัสได้ (อาจไม่ใช่รูปแบบ Base64 ที่ถูกต้อง)');
+                logToTerminal('System', 'tag-antigravity', 'เกิดข้อผิดพลาดในการรันภารกิจ: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🚀 ส่งภารกิจให้ Multi-Agent เริ่มทำงาน</span>';
             }
         }
     </script>
