@@ -10,9 +10,28 @@ from datetime import datetime
 
 PORT = int(os.environ.get("PORT", 8080))
 NINEARM_GATEWAY_URL = os.environ.get("NINEARM_GATEWAY_URL", "https://gateway.9arm.co/v1/messages")
-NINEARM_AUTH_TOKEN = os.environ.get("NINEARM_AUTH_TOKEN", "sk-gf5krfQP-b2dR7KAFDOz7A")
+NINEARM_AUTH_TOKEN = os.environ.get("NINEARM_AUTH_TOKEN", "").strip()
 NINEARM_MODEL_ID = os.environ.get("NINEARM_MODEL_ID", "qwen3.8-27b-fp8")
 LAYA_API_URL = os.environ.get("LAYA_API_URL", "http://127.0.0.1:8770")
+
+MAX_BODY_SIZE = 2 * 1024 * 1024  # 2MB Request Payload Ceiling
+MAX_PROMPT_LENGTH = 2000
+ALLOWED_GATEWAY_DOMAINS = ["gateway.9arm.co"]
+
+def is_safe_gateway_url(url: str) -> bool:
+    """Enforces strict domain whitelisting to block SSRF attacks."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+        return parsed.scheme == "https" and parsed.netloc in ALLOWED_GATEWAY_DOMAINS
+    except Exception:
+        return False
+
+def sanitize_user_input(text: str, max_len: int = 2000) -> str:
+    """Strips control chars and bounds length to prevent prompt injection & buffer abuse."""
+    if not text:
+        return ""
+    clean = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', str(text))[:max_len]
+    return clean.strip()
 
 # คลังคำศัพท์ Offensive Cyber ระดับลึก พร้อมคำแปลเชิงวิศวกรรมและวิธีพูดที่ถูกต้อง
 OFFENSIVE_LEXICON = [
@@ -943,13 +962,28 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self):
+        content_len = int(self.headers.get('Content-Length', 0))
+        if content_len > MAX_BODY_SIZE:
+            self.send_error(413, "Payload Too Large: Exceeds 2MB Safety Limit")
+            return
+
+        post_body = self.rfile.read(content_len)
+
         if self.path == "/api/gateway":
-            content_len = int(self.headers.get('Content-Length', 0))
-            post_data = self.rfile.read(content_len)
             try:
-                payload = json.loads(post_data.decode('utf-8'))
+                payload = json.loads(post_body.decode('utf-8'))
                 target_url = payload.get('target_url', 'https://gateway.9arm.co/v1/chat/completions')
-                api_key = payload.get('api_key', '')
+                
+                # SSRF Protection: Enforce strict whitelist to gateway.9arm.co
+                if not is_safe_gateway_url(target_url):
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": "Security Alert: Disallowed target URL. Only https://gateway.9arm.co is permitted."}).encode('utf-8'))
+                    return
+
+                api_key = payload.get('api_key', '').strip() or NINEARM_AUTH_TOKEN
                 body_data = payload.get('body', {})
 
                 req_headers = {'Content-Type': 'application/json'}
@@ -982,44 +1016,44 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(err_resp)
 
         elif self.path == "/api/refactor":
-            content_len = int(self.headers.get('Content-Length', 0))
-            post_body = self.rfile.read(content_len)
-            req = json.loads(post_body.decode('utf-8'))
-            prompt = req.get("prompt", "")
-
-            # เรียกใช้งานเอนจิน Master Prompt Engine
-            result = engine.refactor(prompt)
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
-
-        elif self.path == "/api/ninearm_refactor":
-            content_len = int(self.headers.get('Content-Length', 0))
-            post_body = self.rfile.read(content_len)
-            req = json.loads(post_body.decode('utf-8'))
-            category = req.get("category", "")
-            safe_prompt = req.get("safe_prompt", "")
-            original_prompt = req.get("original_prompt", "")
-
-            # ประมวลผลคู่ขนานผ่าน 9arm AI Gateway (Qwen 3.8 27B)
-            ai_result = call_ninearm_qwen(category, safe_prompt, original_prompt)
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            self.wfile.write(json.dumps(ai_result, ensure_ascii=False).encode('utf-8'))
-
-        elif self.path == "/api/pentagi/orchestrate":
-            content_len = int(self.headers.get('Content-Length', 0))
-            post_body = self.rfile.read(content_len)
             try:
                 req = json.loads(post_body.decode('utf-8'))
-                target = req.get("target", "Local Lab Target")
-                objective = req.get("objective", "Security Assessment")
+                prompt = sanitize_user_input(req.get("prompt", ""), MAX_PROMPT_LENGTH)
+
+                # เรียกใช้งานเอนจิน Master Prompt Engine
+                result = engine.refactor(prompt)
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
+            except Exception as e:
+                self.send_error(400, f"Bad Request: {str(e)}")
+
+        elif self.path == "/api/ninearm_refactor":
+            try:
+                req = json.loads(post_body.decode('utf-8'))
+                category = req.get("category", "")
+                safe_prompt = req.get("safe_prompt", "")
+                original_prompt = sanitize_user_input(req.get("original_prompt", ""), MAX_PROMPT_LENGTH)
+
+                # ประมวลผลคู่ขนานผ่าน 9arm AI Gateway (Qwen 3.8 27B)
+                ai_result = call_ninearm_qwen(category, safe_prompt, original_prompt)
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps(ai_result, ensure_ascii=False).encode('utf-8'))
+            except Exception as e:
+                self.send_error(400, f"Bad Request: {str(e)}")
+
+        elif self.path == "/api/pentagi/orchestrate":
+            try:
+                req = json.loads(post_body.decode('utf-8'))
+                target = sanitize_user_input(req.get("target", "Local Lab Target"), 250)
+                objective = sanitize_user_input(req.get("objective", "Security Assessment"), MAX_PROMPT_LENGTH)
                 user_token = req.get("api_key", "").strip() or NINEARM_AUTH_TOKEN
 
                 # Helper to send to NineArm Gateway using Anthropic message format
@@ -1050,19 +1084,30 @@ class SafeHandler(http.server.SimpleHTTPRequestHandler):
                     except Exception as e:
                         return f"Insight: ดำเนินการวิเคราะห์ตามหลักการ PentAGI: {str(e)}"
 
-                # Step 1: Lead Planner Agent
+                # Step 1: Lead Planner Agent (Encapsulated prompt data to prevent prompt injection)
                 planner_system = """You are the Lead Pentest Planner in the PentAGI Multi-Agent system.
 Decompose the target and objective into 3 to 5 structured, concrete, actionable tactical steps.
 Follow methodology: 1. Recon/Surface Mapping 2. Vulnerability Probe 3. Exploitation/Bypass Verification 4. Remediation Blueprint.
 Respond concisely in bullet points."""
-                planner_prompt = f"Target: {target}\nObjective: {objective}\nกรุณากำหนดแผนงาน 3-5 ขั้นตอนอย่างเป็นระบบ"
+                planner_prompt = f"""Analyze the following authorized security mission:
+<target_data>
+{target}
+</target_data>
+<objective_data>
+{objective}
+</objective_data>
+กรุณากำหนดแผนงาน 3-5 ขั้นตอนอย่างเป็นระบบ"""
                 plan_result = call_gateway_agent(planner_system, planner_prompt, max_tokens=1000)
 
                 # Step 2: Tactical Executor Agent
                 executor_system = f"""You are the Security Executor Agent in PentAGI.
-Propose 2 concrete tactical actions to execute against Target: {target} for Objective: {objective}.
+Propose 2 concrete tactical actions to execute against the target.
 Format as clear actionable checks with expected outcomes."""
-                executor_prompt = f"แผนการที่วางไว้:\n{plan_result}\n\nกรุณาส่ง Action ตรวจสอบที่ต้องลงมือทำ"
+                executor_prompt = f"""แผนการที่วางไว้:
+{plan_result}
+
+Target Reference: {target}
+กรุณาส่ง Action ตรวจสอบที่ต้องลงมือทำ"""
                 executor_raw = call_gateway_agent(executor_system, executor_prompt, max_tokens=1000)
 
                 actions = [
@@ -1080,16 +1125,25 @@ Review the actions and verify zero infinite loops or redundant steps. Provide a 
                 reporter_system = """You are the Senior Penetration Test Reporter in PentAGI.
 Synthesize the entire assessment into an Executive Penetration Testing Report in Thai.
 Include: 1. บทสรุปผู้บริหาร 2. ช่องโหว่ที่ตรวจสอบ 3. ขั้นตอนจำลอง (PoC) 4. แนวทางแก้ไข (Remediation)."""
-                reporter_prompt = f"Target: {target}\nObjective: {objective}\nPlan:\n{plan_result}\nExecution Log:\n{executor_raw}\nMentor Advice:\n{mentor_advice}\n\nสังเคราะห์รายงานฉบับสมบูรณ์"
+                reporter_prompt = f"""Target: {target}
+Objective: {objective}
+Plan:
+{plan_result}
+Execution Log:
+{executor_raw}
+Mentor Advice:
+{mentor_advice}
+
+สังเคราะห์รายงานฉบับสมบูรณ์"""
                 report_result = call_gateway_agent(reporter_system, reporter_prompt, max_tokens=2000)
 
                 response_payload = {
-                    "success": true,
+                    "success": True,
                     "target": target,
                     "objective": objective,
                     "plan": plan_result,
                     "actions": actions,
-                    "loop_detected": false,
+                    "loop_detected": False,
                     "mentor_advice": mentor_advice,
                     "report": report_result
                 }
@@ -1099,6 +1153,14 @@ Include: 1. บทสรุปผู้บริหาร 2. ช่องโห�
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps(response_payload, ensure_ascii=False).encode('utf-8'))
+
+            except Exception as e:
+                err_resp = json.dumps({"success": False, "error": str(e)}).encode('utf-8')
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(err_resp)
 
             except Exception as e:
                 err_resp = json.dumps({"success": False, "error": str(e)}).encode('utf-8')
